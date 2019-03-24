@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="P2P 网络通信p2p网络通信主要完成全网节点发现，区块、交易的同步，主要包括如下两个功能栈，基于udp的节点发现协议，基于tcp/ip的同步协议。 节点发现协议   discovery     udp    基于udp节点发现 bytom实现了类Kademlia的DHT存储有关网络中Bytom节点的信息。协议维护了节点路由表，节点路由表依据距离把网络中节点信息存储到表中不同的bucket中。 节">
+<meta property="og:type" content="article">
+<meta property="og:title" content="bytom p2p 网络节点发现">
+<meta property="og:url" content="http://yoursite.com/2010/03/14/article-title/index.html">
+<meta property="og:site_name" content="yahtoo&#39;s notes">
+<meta property="og:description" content="P2P 网络通信p2p网络通信主要完成全网节点发现，区块、交易的同步，主要包括如下两个功能栈，基于udp的节点发现协议，基于tcp/ip的同步协议。 节点发现协议   discovery     udp    基于udp节点发现 bytom实现了类Kademlia的DHT存储有关网络中Bytom节点的信息。协议维护了节点路由表，节点路由表依据距离把网络中节点信息存储到表中不同的bucket中。 节">
+<meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2019-03-14T08:41:44.516Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="bytom p2p 网络节点发现">
+<meta name="twitter:description" content="P2P 网络通信p2p网络通信主要完成全网节点发现，区块、交易的同步，主要包括如下两个功能栈，基于udp的节点发现协议，基于tcp/ip的同步协议。 节点发现协议   discovery     udp    基于udp节点发现 bytom实现了类Kademlia的DHT存储有关网络中Bytom节点的信息。协议维护了节点路由表，节点路由表依据距离把网络中节点信息存储到表中不同的bucket中。 节">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2010/03/14/article-title/"/>
+
+
+
+
+
+  <title>bytom p2p 网络节点发现 | yahtoo's notes</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="default">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">yahtoo's notes</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            About
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            Tags
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            Archives
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2010/03/14/article-title/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="John Doe">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="yahtoo's notes">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">bytom p2p 网络节点发现</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2010-03-14T14:05:12+08:00">
+                2010-03-14
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="P2P-网络通信"><a href="#P2P-网络通信" class="headerlink" title="P2P 网络通信"></a>P2P 网络通信</h1><p>p2p网络通信主要完成全网节点发现，区块、交易的同步，主要包括如下两个功能栈，基于udp的节点发现协议，基于tcp/ip的同步协议。</p>
+<h2 id="节点发现协议"><a href="#节点发现协议" class="headerlink" title="节点发现协议"></a>节点发现协议</h2><table>
+<thead>
+<tr>
+<th style="text-align:center">discovery</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">udp</td>
+</tr>
+</tbody>
+</table>
+<p><strong>基于udp节点发现</strong></p>
+<p>bytom实现了类Kademlia的DHT存储有关网络中Bytom节点的信息。协议维护了节点路由表，节点路由表依据距离把网络中节点信息存储到表中不同的bucket中。</p>
+<h3 id="节点ID及距离"><a href="#节点ID及距离" class="headerlink" title="节点ID及距离"></a>节点ID及距离</h3><p>网络中每个节点都有一个唯一ID，节点每次启动时都会产生ED25519公私钥对，其中公钥作为节点的ID，长度32byte。</p>
+<p>两个节点之间的<strong>距离</strong>是以下公式计算而来，所以节点之间的距离代表逻辑距离，而不是节点间的真实物理距离。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">distance(n₁, n₂) = keccak256(n₁) XOR keccak256(n₂)</span><br></pre></td></tr></table></figure>
+<h3 id="节点路由表"><a href="#节点路由表" class="headerlink" title="节点路由表"></a>节点路由表</h3><table>
+<thead>
+<tr>
+<th style="text-align:center">bucket index</th>
+<th style="text-align:center">node</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">k-bucket 0</td>
+<td style="text-align:center">距离[1,2)</td>
+</tr>
+<tr>
+<td style="text-align:center">k-bucket 1</td>
+<td style="text-align:center">距离[2,4)</td>
+</tr>
+<tr>
+<td style="text-align:center">k-bucket 2</td>
+<td style="text-align:center">距离[4,8)</td>
+</tr>
+<tr>
+<td style="text-align:center">…</td>
+<td style="text-align:center">…</td>
+</tr>
+<tr>
+<td style="text-align:center">k-bucket i</td>
+<td style="text-align:center">距离 [2^i,2^(i+1)</td>
+</tr>
+<tr>
+<td style="text-align:center">…</td>
+<td style="text-align:center">…</td>
+</tr>
+<tr>
+<td style="text-align:center">k-bucket 255</td>
+<td style="text-align:center">距离[2^255, 2^(255+1))</td>
+</tr>
+</tbody>
+</table>
+<p><strong>节点路由表</strong></p>
+<p>根据Kademilia协议节点需要保留其邻居节点的信息。邻居节点存储在由“k-buckets”组成的路由表中。对于每个bucket[i] <code>0≤i&lt;256</code>，存储距离自己“2^i”和“2^(i + 1)”之间的距离节点。</p>
+<p>协议使用“k = 16”，即每个k-bucket最多存储16个节点。bucket中节点按上次查看的时间排序 - 最近看到的节点位于bucket头部，最先看到的在bucket尾部。</p>
+<p>每当遇到新节点N1时，它就可以插入相应的桶中。如果桶中包含少于“k”的节点，则可以简单地将N1添加到桶头部。如果该桶已经包含<code>k</code>个节点，则取桶中最先看到的节点N2，需要通过发送ping数据包重新验证节点是否在线。如果没有从N2收到答复，那就是被认为是无效的，N2被移除bucket并且N1被添加到桶的前面。<br>否则将N2加入cache中，如果cache也满了，则把最先放入cache中的节点N3删除。当有节点掉线时则会把cache中的最新节点放入bucket中。</p>
+<h3 id="路由表刷新"><a href="#路由表刷新" class="headerlink" title="路由表刷新"></a>路由表刷新</h3><p>节点通过定期迭代查找距离targetID距离近的节点来更新路由表。工作过程如下：</p>
+<p>a. 随机生成目标节点Id，记为TargetId，从1开始记录发现次数和刷新时间。</p>
+<p>b. 在当前节点的K桶里查找与目标节点最近的16个节点</p>
+<p>c. 向b中得到的每个节点发送findnode命令,接收到每个节点传回的neighbours节点</p>
+<p>d. 对c返回的每个节点进行ping-pong测试然后更新到本地k桶</p>
+<p>如果一轮FindNode查询无法返回比已知最近的节点更近的节点，启动器将FindNode重新发送到k个最近节点中未查找过得节点。</p>
+<h3 id="协议消息及编码"><a href="#协议消息及编码" class="headerlink" title="协议消息及编码"></a>协议消息及编码</h3><p>协议实现了Kademlia协议的两组命令：</p>
+<p>ping<------------->pong</-------------></p>
+<p>findnode <---------->neighbors</----------></p>
+<p>节点发现消息作为UDP数据报发送。数据包的最大大小为1280字节。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">packet = packet-header || packet-data</span><br></pre></td></tr></table></figure>
+<p>每个数据包都以header开头：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">packet-header = hash ||nodeID ||signature||packet-type</span><br><span class="line">hash = sha3（nodeID || signature || packet-type || packet-data）</span><br><span class="line">signature = sign（packet-type || packet-data）</span><br></pre></td></tr></table></figure>
+<p><em>hash</em> 字段使在同一个UDP端口上运行多个协议时可识别。</p>
+<p><em>packet-type</em> 是定义消息类型。</p>
+<h4 id="Ping-Packet（0x01）"><a href="#Ping-Packet（0x01）" class="headerlink" title="Ping Packet（0x01）"></a>Ping Packet（0x01）</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">packet-data = [version，from，to，expiration]</span><br><span class="line">from = [sender-ip，sender-udp-port，sender-tcp-port]</span><br><span class="line">to = [recipient-ip，recipient-udp-port，0]</span><br></pre></td></tr></table></figure>
+<p><em>expiration</em> 字段是绝对的UNIX时间戳。包含过去时间戳的数据包会因为过期而无法处理。<br>收到ping数据包后，收件人应使用pong数据包进行回复。</p>
+<h4 id="Pong-Packet（0x02）"><a href="#Pong-Packet（0x02）" class="headerlink" title="Pong Packet（0x02）"></a>Pong Packet（0x02）</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">packet-data = [to，ping-hash，expiration]</span><br></pre></td></tr></table></figure>
+<p>Pong是对ping的回复。</p>
+<p><em>ping-hash</em> 应该等于相应ping包的hash。应该忽略没有包含最新ping-hash的pong数据包，因为不是对最新ping消息做出的响应。</p>
+<h4 id="FindNode-Packet（0x03）"><a href="#FindNode-Packet（0x03）" class="headerlink" title="FindNode Packet（0x03）"></a>FindNode Packet（0x03）</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">packet-data = [target，expiration]</span><br></pre></td></tr></table></figure>
+<p><em>FindNode</em> 数据包请求接近target的节点的信息。收到FindNode后，收件人应回复<em>Neighbors</em>数据包，在其本地表中找到最接近target的16个节点并返回。</p>
+<h4 id="Neighbors-Packet（0x04）"><a href="#Neighbors-Packet（0x04）" class="headerlink" title="Neighbors Packet（0x04）"></a>Neighbors Packet（0x04）</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">packet-data = [node，expiration]</span><br><span class="line">nodes = [[ip，udp-port，tcp-port，node-id]，...]</span><br></pre></td></tr></table></figure>
+<p>Neighbors是对FindNode的回复。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/10/11/hello-world/" rel="prev" title="Hello World">
+                Hello World <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">John Doe</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-name">posts</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/yourname" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#P2P-网络通信"><span class="nav-number">1.</span> <span class="nav-text">P2P 网络通信</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#节点发现协议"><span class="nav-number">1.1.</span> <span class="nav-text">节点发现协议</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#节点ID及距离"><span class="nav-number">1.1.1.</span> <span class="nav-text">节点ID及距离</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#节点路由表"><span class="nav-number">1.1.2.</span> <span class="nav-text">节点路由表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#路由表刷新"><span class="nav-number">1.1.3.</span> <span class="nav-text">路由表刷新</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#协议消息及编码"><span class="nav-number">1.1.4.</span> <span class="nav-text">协议消息及编码</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Ping-Packet（0x01）"><span class="nav-number">1.1.4.1.</span> <span class="nav-text">Ping Packet（0x01）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Pong-Packet（0x02）"><span class="nav-number">1.1.4.2.</span> <span class="nav-text">Pong Packet（0x02）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#FindNode-Packet（0x03）"><span class="nav-number">1.1.4.3.</span> <span class="nav-text">FindNode Packet（0x03）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Neighbors-Packet（0x04）"><span class="nav-number">1.1.4.4.</span> <span class="nav-text">Neighbors Packet（0x04）</span></a></li></ol></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">John Doe</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
