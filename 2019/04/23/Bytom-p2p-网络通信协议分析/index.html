@@ -1,0 +1,1317 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="数据同步协议比原链网络数据同步协议栈如下图所示。协议栈基于tcp/ip,Encryption完成数据的加密传输，Wire Protocol完成数据序列化，最上层为同步协议。    Tx Sync/Block Sync/Fast Sync/Spv     Wire Protocol   Encryption   TCP/IP    基于tcp/ip同步协议 数据同步首先会在节点之间建立连接MConn">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Bytom p2p 网络通信协议分析">
+<meta property="og:url" content="http://yoursite.com/2019/04/23/Bytom-p2p-网络通信协议分析/index.html">
+<meta property="og:site_name" content="yahtoo&#39;s notes">
+<meta property="og:description" content="数据同步协议比原链网络数据同步协议栈如下图所示。协议栈基于tcp/ip,Encryption完成数据的加密传输，Wire Protocol完成数据序列化，最上层为同步协议。    Tx Sync/Block Sync/Fast Sync/Spv     Wire Protocol   Encryption   TCP/IP    基于tcp/ip同步协议 数据同步首先会在节点之间建立连接MConn">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="https://github.com/yahtoo/study/blob/master/p2p_diagram/handshake.png?raw=true">
+<meta property="og:image" content="https://github.com/yahtoo/study/blob/master/p2p_diagram/blocksync.png?raw=true">
+<meta property="og:image" content="https://github.com/yahtoo/study/blob/master/p2p_diagram/normalsync.png?raw=true">
+<meta property="og:image" content="https://github.com/yahtoo/study/blob/master/p2p_diagram/fastsync.png?raw=true">
+<meta property="og:image" content="https://github.com/yahtoo/study/blob/master/p2p_diagram/spvproof.png?raw=true">
+<meta property="og:updated_time" content="2019-04-22T23:17:26.874Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Bytom p2p 网络通信协议分析">
+<meta name="twitter:description" content="数据同步协议比原链网络数据同步协议栈如下图所示。协议栈基于tcp/ip,Encryption完成数据的加密传输，Wire Protocol完成数据序列化，最上层为同步协议。    Tx Sync/Block Sync/Fast Sync/Spv     Wire Protocol   Encryption   TCP/IP    基于tcp/ip同步协议 数据同步首先会在节点之间建立连接MConn">
+<meta name="twitter:image" content="https://github.com/yahtoo/study/blob/master/p2p_diagram/handshake.png?raw=true">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2019/04/23/Bytom-p2p-网络通信协议分析/"/>
+
+
+
+
+
+  <title>Bytom p2p 网络通信协议分析 | yahtoo's notes</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="default">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">yahtoo's notes</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            Archives
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/04/23/Bytom-p2p-网络通信协议分析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="yahtoo">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="yahtoo's notes">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Bytom p2p 网络通信协议分析</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-04-23T06:58:10+08:00">
+                2019-04-23
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="数据同步协议"><a href="#数据同步协议" class="headerlink" title="数据同步协议"></a>数据同步协议</h1><p>比原链网络数据同步协议栈如下图所示。协议栈基于tcp/ip,Encryption完成数据的加密传输，Wire Protocol完成数据序列化，最上层为同步协议。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Tx Sync/Block Sync/Fast Sync/Spv</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">Wire Protocol</td>
+</tr>
+<tr>
+<td style="text-align:center">Encryption</td>
+</tr>
+<tr>
+<td style="text-align:center">TCP/IP</td>
+</tr>
+</tbody>
+</table>
+<p><strong>基于tcp/ip同步协议</strong></p>
+<p>数据同步首先会在节点之间建立连接<em>MConnection</em>，建立连接后会对连接进行加密处理，区块，交易数据序列化为二进制数据流通过加密通道传递给其它节点。</p>
+<h2 id="建立加密连接"><a href="#建立加密连接" class="headerlink" title="建立加密连接"></a>建立加密连接</h2><h3 id="建立多路复用连接"><a href="#建立多路复用连接" class="headerlink" title="建立多路复用连接"></a>建立多路复用连接</h3><p><em>MConnection</em> 是在单个tcp连接上支持多个独立流传输的多路复用连接，并且每个流提供了单独的服务质量保证。每个流称为<em>Channel</em>，每个<em>Channel</em>具有全局唯一的<em> byte id </em> 。每个<em>channel</em>也具有决定服务质量的相对优先级。<em>byte id</em> 和每个Channel的相对优先级在初始化时配置。</p>
+<p>MConnection支持三种数据包类型：</p>
+<ul>
+<li>Ping</li>
+<li>Pong</li>
+<li>Msg</li>
+</ul>
+<h4 id="Ping和Pong"><a href="#Ping和Pong" class="headerlink" title="Ping和Pong"></a>Ping和Pong</h4><p>ping和pong消息向连接写入单个字节;分别为0x1和0x2。</p>
+<p>当我们在pingTimeout周期没有及时收到MConnection上的任何消息时，我们发送一条ping消息。<br>当在MConnection上收到ping消息时，会发送一个pong作为响应。如果在ping之后没有及时收到pong消息，则节点将断开连接。</p>
+<h4 id="Msg"><a href="#Msg" class="headerlink" title="Msg"></a>Msg</h4><p>通道中的消息被切割成较小的<em>msgPacket</em> 以进行多路复用。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">type msgPacket struct &#123;</span><br><span class="line">    ChannelID byte</span><br><span class="line">    EOF       byte // 1 means message ends here.</span><br><span class="line">    Bytes     []byte</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>msgPacket</code><br>用<a href="https://github.com/Bytom/bytom/tree/master/vendor/github.com/tendermint/go-wire" target="_blank" rel="noopener">go-wire</a>进行序列化，并以0x3为前缀。接收到的一组数据包的“字节”被附加在一起直到收到带有<code>EOF = 1</code> 的数据包，然后完整的序列化消息由相应<em>channel</em>的<em>onReceive</em>函数处理。</p>
+<h4 id="多路复用"><a href="#多路复用" class="headerlink" title="多路复用"></a>多路复用</h4><p>消息从<em>sendRoutine</em> 发送，它循环在select状态上并发送ping，pong或msg消息。该批数据消息可以包括来自多个<em>channel</em>的消息。消息字节排队等待在各自的通道中发送，每个通道一次取一个未发送的消息。从最近发送的字节与信道优先级的比最低的信道选择一个消息发送。</p>
+<h4 id="发送消息"><a href="#发送消息" class="headerlink" title="发送消息"></a>发送消息</h4><p>发送消息有两种方法：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">func (m MConnection) Send(chID byte, msg interface&#123;&#125;) bool &#123;&#125;</span><br><span class="line">func (m MConnection) TrySend(chID byte, msg interface&#123;&#125;) bool &#123;&#125;</span><br></pre></td></tr></table></figure></p>
+<p><code>Send（chID，msg）</code>是一个阻塞调用，等待<em>msg</em>成功排队到给定id字节<em>chID</em>的通道。消息<em>msg</em>被序列化使用<em>wire</em>子模块的<code>WriteBinary()</code>反射函数。</p>
+<p><code>TrySend（chID，msg）</code>是一个非阻塞调用，它将消息<em>msg</em>排入<em>chID</em>通道如果队列未满;否则立即回<em>false</em>。</p>
+<p><code>Send（）</code>和<code>TrySend（）</code>对每个<em>Peer</em>可见。</p>
+<h4 id="Peer"><a href="#Peer" class="headerlink" title="Peer"></a>Peer</h4><p>每个<em>peer</em>都有一个<em>MConnection</em>实例，并含有其他信息，例如是否是outbound(主动拨号其它节点)，关于节点的各种身份信息，以及reactor使用的其他更高级别的线程安全数据。</p>
+<h4 id="Switch-Reactor"><a href="#Switch-Reactor" class="headerlink" title="Switch/Reactor"></a>Switch/Reactor</h4><p><em>Switch</em> 控制peer连接，以在Reactor上接收传入消息。每个Reactor负责处理一个或多个channel传入的信息。因此，通常通过peer发送消息，在Reactor上接收传入的消息。</p>
+<p>新添加peer后，给定<code>reactor</code>的传入消息将通过该<code>reactor</code>的<code>Receive</code>方法处理，并且输出消息由每个节点的<code>Reactor</code>直接发送。 <code>reactor</code>使用节点之间的<code>go-routing</code>来处理这些。</p>
+<h3 id="连接加密及身份确认"><a href="#连接加密及身份确认" class="headerlink" title="连接加密及身份确认"></a>连接加密及身份确认</h3><p>在节点拨号成功后，执行两次握手：第一次进行通道加密、身份验证，第二次进行版本、网络类型验证。</p>
+<h4 id="Peer-Identity"><a href="#Peer-Identity" class="headerlink" title="Peer Identity"></a>Peer Identity</h4><p>节点每次启动都会随机产生一个<strong>public key</strong>作为节点的<strong>id</strong>。当尝试连接到peer时，我们使用<code>PeerURL：&lt;ID&gt; @ &lt;IP&gt;：&lt;PORT&gt;</code>。我们将尝试连接<em>IP：PORT</em>上的节点，并验证身份，通过经过身份id的签名，只有拥有相应私钥的节点可以建立连接。这可以防止对节点的中间人攻击。</p>
+<h4 id="通信加密、身份验证"><a href="#通信加密、身份验证" class="headerlink" title="通信加密、身份验证"></a>通信加密、身份验证</h4><p>节点建立加密连接时使用<strong>Diffie-Helman密钥交换协议</strong>生成共享秘钥，使用<strong>NACL SecretBox</strong>对通信数据进行对称加密。<br>工作流程如下：</p>
+<ul>
+<li>生成一个临时的ED25519密钥对</li>
+<li>将临时的公钥发送给对等方</li>
+<li>等待接收对等方的临时公钥</li>
+<li>使用对方临时公钥和我们的临时私钥计算Diffie-Hellman共享密钥</li>
+<li>生成两个用于加密（发送和接收）的随机数，流程如下：<ul>
+<li>按升序对临时的公钥进行排序并将它们连接起来</li>
+<li>进行RIPEMD160运算</li>
+<li>附加4个空字节（将散列扩展为24个字节）</li>
+<li>结果是nonce1</li>
+<li>翻转nonce1的最后一位以获得nonce2</li>
+<li>如果我们有一个较小的临时pubkey，使用nonce1接收，nonce2发送;否则相反</li>
+</ul>
+</li>
+<li>从现在开始的所有通信都使用共享密钥和随机数进行加密，其中每个随机数每次使用时增加2</li>
+<li>我们现在有一个加密通道，但仍需要进行身份验证</li>
+<li>签名共同挑战：<ul>
+<li>对排序和连接的短暂pubkey进行SHA256运算</li>
+</ul>
+</li>
+<li>使用我们的持久私钥签署共同挑战</li>
+<li>将go-wire编码的持久性pubkey和签名发送给节点</li>
+<li>等待从节点接收持久公钥和签名</li>
+<li>使用节点的持久公钥验证消息签名</li>
+</ul>
+<p>如果这是一个outgoing连接（主动连接其它节点）并且使用了节点ID，然后最后验证节点的持久公钥是否与我们拨号的节点ID相对应，即。 <code>peer.PubKey.Address() == &lt;ID&gt;</code>。</p>
+<p>现在连接现已通过身份验证，并且所有流量都已加密。</p>
+<p><strong>注意</strong>：只有拨号节点可以验证节点的身份，但这是我们关心的，因为当我们加入网络时我们希望确保已经连接了目标节点（而不是被中间人攻击）。</p>
+<h4 id="版本确认"><a href="#版本确认" class="headerlink" title="版本确认"></a>版本确认</h4><p>版本确认允许节点交换其NodeInfo：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> NodeInfo <span class="keyword">struct</span> &#123;</span><br><span class="line">  PubKey     crypto.PubKeyEd25519</span><br><span class="line">  ListenAddr <span class="keyword">string</span></span><br><span class="line">  Network    <span class="keyword">string</span></span><br><span class="line">  Version    <span class="keyword">string</span></span><br><span class="line">  Moniker    <span class="keyword">string</span></span><br><span class="line">  Other      []<span class="keyword">string</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如果出现以下情况则断开连接：</p>
+<ul>
+<li><code>peer.NodeInfo.Version</code> 未格式化为<code>X-X-X</code>，其中X是称为Major，Minor和Revision的整数。</li>
+<li><code>peer.NodeInfo.Version</code> 主版本号与我们的不一样。</li>
+<li><code>peer.NodeInfo.Network</code> 网络类型与我们的不一样。</li>
+</ul>
+<p>此时，如果没有断开连接，则节点有效。它通过<code>AddPeer</code>方法添加到<code>switch</code>中，因此被添加到所有<code>reactor</code>中。</p>
+<h2 id="数据序列化协议"><a href="#数据序列化协议" class="headerlink" title="数据序列化协议"></a>数据序列化协议</h2><h3 id="支持的类型"><a href="#支持的类型" class="headerlink" title="支持的类型"></a>支持的类型</h3><ul>
+<li>原始类型<ul>
+<li><code>uint8</code> (aka <code>byte</code>), <code>uint16</code>, <code>uint32</code>, <code>uint64</code></li>
+<li><code>int8</code>, <code>int16</code>, <code>int32</code>, <code>int64</code></li>
+<li><code>uint</code>, <code>int</code>: variable length (un)signed integers</li>
+<li><code>string</code>, <code>[]byte</code></li>
+<li><code>time</code></li>
+</ul>
+</li>
+<li>派生类型<ul>
+<li>structs</li>
+<li>特定类型的变长数组</li>
+<li>特定类型的固定长度数组</li>
+<li>interfaces：注册的联合类型，前面是<code>type byte</code></li>
+<li>指针</li>
+</ul>
+</li>
+</ul>
+<h3 id="二进制编码"><a href="#二进制编码" class="headerlink" title="二进制编码"></a>二进制编码</h3><p><strong>固定长度基本类型</strong> 用1,2,3或4个大端字节编码。</p>
+<ul>
+<li><code>uint8</code>（又名<code>byte</code>），<code>uint16</code>，<code>uint32</code>，<code>uint64</code>：分别占用1,2,3和4个字节</li>
+<li><code>int8</code>，<code>int16</code>，<code>int32</code>，<code>int64</code>：分别占用1,2,3和4个字节</li>
+<li><code>time</code>：<code>int64</code> 表示自纪元以来的纳秒</li>
+</ul>
+<p><strong>可变长度整数</strong> 用一个前导字节编码，表示后续大端字节的长度。对于有符号的负整数，前导字节的最高有效位为1。</p>
+<ul>
+<li><code>uint</code>：1字节长度前缀可变大小（0~255字节）无符号整数</li>
+<li><code>int</code>：1字节长度前缀变量大小（0~127字节）有符号整数</li>
+</ul>
+<p>注意：虽然数字0（零）用单个字节<code>x00</code>编码，但数字1用两个字节表示：<code>x0101</code>。这不是最高效的表示，但规则更容易记住。</p>
+<table>
+<thead>
+<tr>
+<th>号码</th>
+<th>二进制<code>uint</code></th>
+<th>二进制<code>int</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td><code>x00</code></td>
+<td><code>x00</code></td>
+</tr>
+<tr>
+<td>1</td>
+<td><code>x0101</code></td>
+<td><code>x0101</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>x0102</code></td>
+<td><code>x0102</code></td>
+</tr>
+<tr>
+<td>256</td>
+<td><code>x020100</code></td>
+<td><code>x020100</code></td>
+</tr>
+<tr>
+<td>2 ^（127 * 8）-1</td>
+<td><code>x7FFFFF ...</code></td>
+<td><code>x7FFFFF ...</code></td>
+</tr>
+<tr>
+<td>2 ^（127 * 8）</td>
+<td><code>x800100 ......</code></td>
+<td>溢出</td>
+</tr>
+<tr>
+<td>2 ^（255 * 8）-1</td>
+<td><code>xFFFFFF ...</code></td>
+<td>溢出</td>
+</tr>
+<tr>
+<td>-1</td>
+<td>不适用</td>
+<td><code>x8101</code></td>
+</tr>
+<tr>
+<td>-2</td>
+<td>不适用</td>
+<td><code>x8102</code></td>
+</tr>
+<tr>
+<td>-256</td>
+<td>不适用</td>
+<td><code>x820100</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Structures</strong> 通过按声明顺序对字段值进行编码来编码。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Foo <span class="keyword">struct</span> &#123;</span><br><span class="line">    MyString <span class="keyword">string</span></span><br><span class="line">    MyUint32 <span class="keyword">uint32</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">var</span> foo = Foo &#123;“<span class="number">626172</span>”，math.MaxUint32&#125;</span><br><span class="line"></span><br><span class="line"> foo的二进制表示：</span><br><span class="line"> <span class="number">0103626172</span>FFFFFFFF</span><br><span class="line"> <span class="number">0103</span>：<span class="string">`int`</span>编码的字符串长度，这里是<span class="number">3</span></span><br><span class="line">     <span class="number">626172</span>：<span class="number">3</span>个字节的字符串“bar”</span><br><span class="line">           FFFFFFFF：<span class="keyword">uint32</span> MaxUint32的<span class="number">4</span>个字节</span><br></pre></td></tr></table></figure>
+<p><strong>可变长度数组</strong> 用前导“int”编码，表示数组的长度，后跟项目的二进制表示。 <strong>固定长度数组</strong> 类似，但前面没有前导<code>int</code>。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">foos：= [] Foo &#123;foo，foo&#125;</span><br><span class="line"></span><br><span class="line">foos的二进制表示：</span><br><span class="line"> <span class="number">01020103626172</span>FFFFFFFF0103626172FFFFFFFF</span><br><span class="line"> <span class="number">0102</span>：<span class="string">`int`</span>编码的数组长度，这里<span class="number">2</span></span><br><span class="line">     <span class="number">0103626172</span>FFFFFFFF：第一个<span class="string">`foo`</span></span><br><span class="line">                       <span class="number">0103626172</span>FFFFFFFF：第二个<span class="string">`foo`</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">foos：= [<span class="number">2</span>] Foo &#123;foo，foo&#125; <span class="comment">//固定长度数组</span></span><br><span class="line"></span><br><span class="line">foos的二进制表示：</span><br><span class="line"> <span class="number">0103626172</span>FFFFFFFF0103626172FFFFFFFF</span><br><span class="line"> <span class="number">0103626172</span>FFFFFFFF：第一个<span class="string">`foo`</span></span><br><span class="line">                   <span class="number">0103626172</span>FFFFFFFF：第二个<span class="string">`foo`</span></span><br></pre></td></tr></table></figure>
+<p><strong>接口</strong> 可以代表任意数量的具体类型之一。必须首先使用相应的<code>type byte</code>声明接口的具体类型。然后使用前导“类型字节”对接口进行编码，然后对底层具体类型进行二进制编码。</p>
+<p>注意：字节<code>x00</code>保留用于<code>nil</code>接口值和<code>nil</code>指针值。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Animal <span class="keyword">interface</span>&#123;&#125;</span><br><span class="line"><span class="keyword">type</span> Dog <span class="keyword">uint32</span></span><br><span class="line"><span class="keyword">type</span> Cat <span class="keyword">string</span></span><br><span class="line"></span><br><span class="line">RegisterInterface（</span><br><span class="line">  <span class="keyword">struct</span>&#123; Animal &#125;&#123;&#125;,          <span class="comment">// Convenience for referencing the 'Animal' interface</span></span><br><span class="line">  ConcreteType&#123;Dog(<span class="number">0</span>),  <span class="number">0x01</span>&#125;, <span class="comment">// Register the byte 0x01 to denote a Dog</span></span><br><span class="line">  ConcreteType&#123;Cat(<span class="string">""</span>), <span class="number">0x02</span>&#125;, <span class="comment">// Register the byte 0x02 to denote a Cat</span></span><br><span class="line">）</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> animal Animal = Dog（<span class="number">02</span>）</span><br><span class="line"></span><br><span class="line"> The binary representation of animal:</span><br><span class="line"> <span class="number">010102</span></span><br><span class="line"> <span class="number">01</span>:     the <span class="keyword">type</span> <span class="keyword">byte</span> <span class="keyword">for</span> a <span class="string">`Dog`</span></span><br><span class="line">   <span class="number">0102</span>: the bytes of Dog(<span class="number">02</span>)</span><br></pre></td></tr></table></figure>
+<p><strong>指针</strong> 用一个前导字节<code>x00</code>编码为<code>nil</code>指针，否则用前导字节<code>x01</code>编码，然后是指向的值的二进制编码。</p>
+<p><strong>注意</strong>：将指针类型转换为接口类型很容易，因为<code>type byte</code> <code>x00</code>总是<code>nil</code>。</p>
+<h3 id="JSON编码"><a href="#JSON编码" class="headerlink" title="JSON编码"></a>JSON编码</h3><p>JSON编解码器与[<code>binary</code>]（#binary）编解码器兼容，如果您已经熟悉golang的JSON编码，则相当直观。下面提到了一些特殊规定：</p>
+<ul>
+<li>可变长度和固定长度字节编码为大写十六进制字符串</li>
+<li>接口值被编码为两个项的数组：<code>[type_byte，concrete_value]</code></li>
+<li>次数被编码为rfc2822字符串</li>
+</ul>
+<h2 id="同步协议"><a href="#同步协议" class="headerlink" title="同步协议"></a>同步协议</h2><p>bytom 目前支持普通同步模式，快速同步模式，SPV Proof。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Normal</th>
+<th style="text-align:center">Fast Sync</th>
+<th style="text-align:center">SPV</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">BlocMessage</td>
+<td style="text-align:center">HeadersMessage</td>
+<td style="text-align:center">FilterLoadMessage</td>
+</tr>
+<tr>
+<td style="text-align:center">StatusMessage</td>
+<td style="text-align:center">BlocksMessage</td>
+<td style="text-align:center">FilterClearMessage</td>
+</tr>
+<tr>
+<td style="text-align:center">TransationMessage</td>
+<td style="text-align:center"></td>
+<td style="text-align:center">FilterAddMessage</td>
+</tr>
+<tr>
+<td style="text-align:center">MineBlockMessage</td>
+<td style="text-align:center"></td>
+<td style="text-align:center">MerkleBlockMessage</td>
+</tr>
+</tbody>
+</table>
+<h3 id="节点协议握手"><a href="#节点协议握手" class="headerlink" title="节点协议握手"></a>节点协议握手</h3><p><img src="https://github.com/yahtoo/study/blob/master/p2p_diagram/handshake.png?raw=true" alt="handshake"></p>
+<p>节点协议握手首先会向对方发送状态信息，同时通过状态信息获取对方当前状态，同步协议在获取状态之后。</p>
+<p><strong>StatusRequestMessage</strong></p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Bytes</th>
+<th style="text-align:center">Name</th>
+<th style="text-align:center">Data Type</th>
+<th style="text-align:center">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">0</td>
+<td style="text-align:center">null</td>
+<td style="text-align:center"></td>
+<td style="text-align:center">消息体为空，用于向对方获取状态信息</td>
+</tr>
+</tbody>
+</table>
+<p><strong>StatusResponseMessage</strong></p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Bytes</th>
+<th style="text-align:center">Name</th>
+<th style="text-align:center">Data Type</th>
+<th style="text-align:center">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">8byte</td>
+<td style="text-align:center">Height</td>
+<td style="text-align:center">uint64</td>
+<td style="text-align:center">当前本地高度</td>
+</tr>
+<tr>
+<td style="text-align:center">32byte</td>
+<td style="text-align:center">RawHash</td>
+<td style="text-align:center">[32]byte</td>
+<td style="text-align:center">当前最高区块hash</td>
+</tr>
+<tr>
+<td style="text-align:center">[32]byte</td>
+<td style="text-align:center">GenesisHash</td>
+<td style="text-align:center">[32]byte</td>
+<td style="text-align:center">创世块hash</td>
+</tr>
+</tbody>
+</table>
+<p>在握手后会进行交易池同步，交易池同步会把当前池中的交易打包发给对方，发送交易使用<em>TransactionMessage</em>。</p>
+<p><strong>TransactionMessage</strong></p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Bytes</th>
+<th style="text-align:center">Name</th>
+<th style="text-align:center">Data Type</th>
+<th style="text-align:center">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">Varies</td>
+<td style="text-align:center">RawTx</td>
+<td style="text-align:center">[]byte</td>
+<td style="text-align:center">交易消息</td>
+</tr>
+</tbody>
+</table>
+<h3 id="同步协议-1"><a href="#同步协议-1" class="headerlink" title="同步协议"></a>同步协议</h3><p><img src="https://github.com/yahtoo/study/blob/master/p2p_diagram/blocksync.png?raw=true" alt="blocksync"></p>
+<p>目前支持普通同步和快速同步两种模式，区块同步程序定时检查所有连接的节点状态，判断是否需要同步，当需要同步时，判断节点满足快速同步条件时则进行快速同步，否则进行普通同步。为了使挖矿区块能快速同步到全网，当收到挖矿区块时会触发同步流程，使新区块快速上链，并及时更新挖矿区块高度，从而减少孤儿块产生的概率。</p>
+<p><strong>MineBlockMessage</strong></p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Bytes</th>
+<th style="text-align:center">Name</th>
+<th style="text-align:center">Data Type</th>
+<th style="text-align:center">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">Varies</td>
+<td style="text-align:center">RawBlock</td>
+<td style="text-align:center">[]byte</td>
+<td style="text-align:center">挖矿产生的区块信息</td>
+</tr>
+</tbody>
+</table>
+<h4 id="普通同步模式"><a href="#普通同步模式" class="headerlink" title="普通同步模式"></a>普通同步模式</h4><p><img src="https://github.com/yahtoo/study/blob/master/p2p_diagram/normalsync.png?raw=true" alt="normalsync"></p>
+<p>普通同步模式下，节点按高度获取高度并进行全区块验证。使用<em>GetBlockMessage</em>和<em>BlockMessage</em>消息。<br><strong>GetBlockMessage</strong></p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Bytes</th>
+<th style="text-align:center">Name</th>
+<th style="text-align:center">Data Type</th>
+<th style="text-align:center">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">8byte</td>
+<td style="text-align:center">Height</td>
+<td style="text-align:center">uint64</td>
+<td style="text-align:center">使用高度获取区块，如果高度为0，则使用hash获取区块</td>
+</tr>
+<tr>
+<td style="text-align:center">4byte</td>
+<td style="text-align:center">RawHash</td>
+<td style="text-align:center">[32]byte</td>
+<td style="text-align:center">使用hash获取区块</td>
+</tr>
+</tbody>
+</table>
+<p><strong>BlockMessage</strong></p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Bytes</th>
+<th style="text-align:center">Name</th>
+<th style="text-align:center">Data Type</th>
+<th style="text-align:center">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">Varies</td>
+<td style="text-align:center">RawBlock</td>
+<td style="text-align:center">[]byte</td>
+<td style="text-align:center">序列化的区块信息</td>
+</tr>
+</tbody>
+</table>
+<h4 id="快速同步模式"><a href="#快速同步模式" class="headerlink" title="快速同步模式"></a>快速同步模式</h4><p><img src="https://github.com/yahtoo/study/blob/master/p2p_diagram/fastsync.png?raw=true" alt="fastsync"></p>
+<p>快速同步模式下，通过在代码中加入checkpoint(已确认的区块的hash)，这样同步时只需要比较某些高度区块hash是否和checkpoint区块hash一致，即可判断区块头正确性。通过计算区块中交易merkle树roothash是否和区块头中roothash一致，即可判断区块中的交易正确性。快速同步模式下批量获取区块头以及区块，可以极大提高同步速度。</p>
+<p><strong>GetHeadersMessage</strong></p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Bytes</th>
+<th style="text-align:center">Name</th>
+<th style="text-align:center">Data Type</th>
+<th style="text-align:center">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">Varies</td>
+<td style="text-align:center">RawBlockLocator</td>
+<td style="text-align:center">[][32]byte</td>
+<td style="text-align:center">区块头定位器，用于定位获取区块头的开始位置</td>
+</tr>
+<tr>
+<td style="text-align:center">32 byte</td>
+<td style="text-align:center">RawStopHash</td>
+<td style="text-align:center">[32]byte</td>
+<td style="text-align:center">用于定位获取区块头结束的位置。</td>
+</tr>
+</tbody>
+</table>
+<p><strong>HeadersMessage</strong></p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Bytes</th>
+<th style="text-align:center">Name</th>
+<th style="text-align:center">Data Type</th>
+<th style="text-align:center">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">Varies</td>
+<td style="text-align:center">HeadersMessage</td>
+<td style="text-align:center">[][]byte</td>
+<td style="text-align:center">打包的区块头信息</td>
+</tr>
+</tbody>
+</table>
+<p><strong>GetBlocksMessage</strong></p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Bytes</th>
+<th style="text-align:center">Name</th>
+<th style="text-align:center">Data Type</th>
+<th style="text-align:center">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">Varies</td>
+<td style="text-align:center">RawBlockLocator</td>
+<td style="text-align:center">[][32]byte</td>
+<td style="text-align:center">区块定位器，用于定位获取区块的开始位置</td>
+</tr>
+<tr>
+<td style="text-align:center">32 byte</td>
+<td style="text-align:center">RawStopHash</td>
+<td style="text-align:center">[32]byte</td>
+<td style="text-align:center">用于定位获取区块结束的位置。</td>
+</tr>
+</tbody>
+</table>
+<p><strong>BlocksMessage</strong></p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Bytes</th>
+<th style="text-align:center">Name</th>
+<th style="text-align:center">Data Type</th>
+<th style="text-align:center">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">Varies</td>
+<td style="text-align:center">RawBlocks</td>
+<td style="text-align:center">[][]byte</td>
+<td style="text-align:center">打包的区块信息</td>
+</tr>
+</tbody>
+</table>
+<h3 id="SPV-Proof"><a href="#SPV-Proof" class="headerlink" title="SPV Proof"></a>SPV Proof</h3><p>简单支付验证（SPV）是Satoshi Nakamoto的论文中描述的一种技术。 SPV允许轻量级客户端验证区块链中是否包含交易，而无需下载整个区块链。 SPV客户端只需要下载块头，这些块头比完整块小得多。 为了验证交易是否在块中，SPV客户端以Merkle block的形式请求包含交易证明。<br>SPV提供了两个关键要素：a）它确保您的交易处于一个区块中; b）它提供了区块被添加到链中的确认（工作证明）。<br><img src="https://github.com/yahtoo/study/blob/master/p2p_diagram/spvproof.png?raw=true" alt="SPV Proof"></p>
+<p>SPV 轻客户端首先连接全节点，当与全节点成功建立连接后。轻客户端向全节点注册地址过滤器，过滤器是一个地址集合，包含SPV节点账户的地址。全节点使用地址过滤器对交易进行过滤，并将相关交易发送给轻客户端。轻客户端使用<em>GetMerkleBlockMessage</em>命令向全节点获取<em>MerkleBlockMessage</em>消息。</p>
+<p><strong>FilterLoadMessage</strong></p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Bytes</th>
+<th style="text-align:center">Name</th>
+<th style="text-align:center">Data Type</th>
+<th style="text-align:center">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">Varies</td>
+<td style="text-align:center">Addresses</td>
+<td style="text-align:center">[][]byte</td>
+<td style="text-align:center">地址集合，用于SPV客户端向全节点注册需要过滤的地址</td>
+</tr>
+</tbody>
+</table>
+<p><strong>FilterAddMessage</strong></p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Bytes</th>
+<th style="text-align:center">Name</th>
+<th style="text-align:center">Data Type</th>
+<th style="text-align:center">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">Varies</td>
+<td style="text-align:center">Address</td>
+<td style="text-align:center">[]byte</td>
+<td style="text-align:center">地址信息，用于SPV客户端向全节点添加需要过滤的地址</td>
+</tr>
+</tbody>
+</table>
+<p><strong>FilterClearMessage</strong></p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Bytes</th>
+<th style="text-align:center">Name</th>
+<th style="text-align:center">Data Type</th>
+<th style="text-align:center">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">0</td>
+<td style="text-align:center">null</td>
+<td style="text-align:center"></td>
+<td style="text-align:center">消息体为空，用于SPV客户端向全节点发送清除地址过滤器消息</td>
+</tr>
+</tbody>
+</table>
+<p><strong>GetMerkleBlockMessage</strong></p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Bytes</th>
+<th style="text-align:center">Name</th>
+<th style="text-align:center">Data Type</th>
+<th style="text-align:center">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">8byte</td>
+<td style="text-align:center">Height</td>
+<td style="text-align:center">uint64</td>
+<td style="text-align:center">根据高度获取merkle block，如果为0则通过hash获取</td>
+</tr>
+<tr>
+<td style="text-align:center">32byte</td>
+<td style="text-align:center">RawHash</td>
+<td style="text-align:center">[32]byte</td>
+<td style="text-align:center">根据hash获取merkle block</td>
+</tr>
+</tbody>
+</table>
+<p><strong>MerkleBlockMessage</strong></p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Bytes</th>
+<th style="text-align:center">Name</th>
+<th style="text-align:center">Data Type</th>
+<th style="text-align:center">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">Varies</td>
+<td style="text-align:center">RawBlockHeader</td>
+<td style="text-align:center">[]byte</td>
+<td style="text-align:center">区块头信息</td>
+</tr>
+<tr>
+<td style="text-align:center">Varies</td>
+<td style="text-align:center">TxHashes</td>
+<td style="text-align:center">[][32]byte</td>
+<td style="text-align:center">交易或交易merkle树 node hash,用于计算交易merkle root</td>
+</tr>
+<tr>
+<td style="text-align:center">Varies</td>
+<td style="text-align:center">RawTxDatas</td>
+<td style="text-align:center">[][]byte</td>
+<td style="text-align:center">满足地址过滤器的交易</td>
+</tr>
+<tr>
+<td style="text-align:center">Varies</td>
+<td style="text-align:center">StatusHashes</td>
+<td style="text-align:center">[][32]byte</td>
+<td style="text-align:center">状态或状态merkle树 node hash,用于计算状态merkle root</td>
+</tr>
+<tr>
+<td style="text-align:center">Varies</td>
+<td style="text-align:center">Flags</td>
+<td style="text-align:center">[]byte</td>
+<td style="text-align:center">用于分配TxHashes和StatusHashes到merkle树的特定node</td>
+</tr>
+</tbody>
+</table>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div></div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>Donate</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/images/wechat.jpg" alt="yahtoo WeChat Pay"/>
+        <p>WeChat Pay</p>
+      </div>
+    
+
+    
+
+    
+      <div id="bitcoin" style="display: inline-block">
+        <img id="bitcoin_qr" src="/images/BTC.jpg" alt="yahtoo Bitcoin"/>
+        <p>Bitcoin</p>
+      </div>
+    
+
+    
+      <div id="btm" style="display: inline-block">
+        <img id="btm_qr" src="/images/BTM.jpg" alt="yahtoo BTM"/>
+        <p>BTM</p>
+      </div>
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/03/30/golang源码分析-定时器/" rel="next" title="golang源码分析 定时器">
+                <i class="fa fa-chevron-left"></i> golang源码分析 定时器
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div id="gitalk-container"></div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">yahtoo</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">4</span>
+                  <span class="site-state-item-name">posts</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">1</span>
+                  <span class="site-state-item-name">tags</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/yahtoo" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:yahtoo.ma@gmail.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#数据同步协议"><span class="nav-number">1.</span> <span class="nav-text">数据同步协议</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#建立加密连接"><span class="nav-number">1.1.</span> <span class="nav-text">建立加密连接</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#建立多路复用连接"><span class="nav-number">1.1.1.</span> <span class="nav-text">建立多路复用连接</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Ping和Pong"><span class="nav-number">1.1.1.1.</span> <span class="nav-text">Ping和Pong</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Msg"><span class="nav-number">1.1.1.2.</span> <span class="nav-text">Msg</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#多路复用"><span class="nav-number">1.1.1.3.</span> <span class="nav-text">多路复用</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#发送消息"><span class="nav-number">1.1.1.4.</span> <span class="nav-text">发送消息</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Peer"><span class="nav-number">1.1.1.5.</span> <span class="nav-text">Peer</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Switch-Reactor"><span class="nav-number">1.1.1.6.</span> <span class="nav-text">Switch/Reactor</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#连接加密及身份确认"><span class="nav-number">1.1.2.</span> <span class="nav-text">连接加密及身份确认</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Peer-Identity"><span class="nav-number">1.1.2.1.</span> <span class="nav-text">Peer Identity</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#通信加密、身份验证"><span class="nav-number">1.1.2.2.</span> <span class="nav-text">通信加密、身份验证</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#版本确认"><span class="nav-number">1.1.2.3.</span> <span class="nav-text">版本确认</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#数据序列化协议"><span class="nav-number">1.2.</span> <span class="nav-text">数据序列化协议</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#支持的类型"><span class="nav-number">1.2.1.</span> <span class="nav-text">支持的类型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#二进制编码"><span class="nav-number">1.2.2.</span> <span class="nav-text">二进制编码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#JSON编码"><span class="nav-number">1.2.3.</span> <span class="nav-text">JSON编码</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#同步协议"><span class="nav-number">1.3.</span> <span class="nav-text">同步协议</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#节点协议握手"><span class="nav-number">1.3.1.</span> <span class="nav-text">节点协议握手</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#同步协议-1"><span class="nav-number">1.3.2.</span> <span class="nav-text">同步协议</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#普通同步模式"><span class="nav-number">1.3.2.1.</span> <span class="nav-text">普通同步模式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#快速同步模式"><span class="nav-number">1.3.2.2.</span> <span class="nav-text">快速同步模式</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SPV-Proof"><span class="nav-number">1.3.3.</span> <span class="nav-text">SPV Proof</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">yahtoo</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+  <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+  <script src="https://cdn.bootcss.com/blueimp-md5/2.10.0/js/md5.js"></script>
+   <script type="text/javascript">
+        var gitalk = new Gitalk({
+          clientID: '6433ec3e9af928a8d076',
+          clientSecret: '825ff900f1b6c4de557fc0c2bd8671165a63b2bc',
+          repo: 'yahtoo.github.io',
+          owner: 'yahtoo',
+          admin: ['yahtoo'],
+          id: md5(location.pathname),
+          distractionFreeMode: 'true'
+        })
+        gitalk.render('gitalk-container')           
+       </script>
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
