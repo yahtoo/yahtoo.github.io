@@ -229,6 +229,155 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/07/28/如何提高区块链网络传输效率/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="yahtoo">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="yahtoo's notes">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/07/28/如何提高区块链网络传输效率/" itemprop="url">如何提高区块链网络传输效率</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-07-28T16:33:27+08:00">
+                2019-07-28
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="提高网络传输效率背景"><a href="#提高网络传输效率背景" class="headerlink" title="提高网络传输效率背景"></a>提高网络传输效率背景</h2><ul>
+<li>目前节点间连接数量的主要限制因素是通信带宽，带宽随着连接数量的增加线性增加，所以只有减少节点间通信带宽才能连接更多节点，节点更高的连接性会带来更高的安全性。</li>
+</ul>
+<h2 id="提高区块传输效率方式"><a href="#提高区块传输效率方式" class="headerlink" title="提高区块传输效率方式"></a>提高区块传输效率方式</h2><p>当节点发送区块时会完整的发送区块头和区块中的所有交易。而区块中的交易对每个节点来说大概率都是已知的，因为交易也会在网络上进行广播。为了减少带宽，发送方应避免发送接收方已知的交易信息，而是让接收方到交易池中查找已知交易。</p>
+<ul>
+<li><p>最简单的方式发送交易的32字节ID来代替整个交易。如果区块包含2000个交易，则总大小64000个字节。</p>
+</li>
+<li><p>32字节ID之间意外冲突的可能性几乎为零，所以可以使用交易ID的前8个字节来代替交易。如果区块包含2000个交易，则总大小降低到16000个字节。</p>
+</li>
+<li><p>使用Bloom过滤器，布隆过滤器是一种概率数据结构，用于确定项目是否是给定集合的成员。在这种情况下，所谓集合是发送者块中的所有交易ID,而项目是指接收方mempool中的交易ID，所有可以用来确定接收方mempool中的交易是否在区块中。 Bloom过滤器有两个特殊的特征。首先，它没有假阴性。也就是说，如果Bloom过滤器确定交易ID不在集合中，那么它肯定不在集合中。其次，Bloom过滤器确实存在误报。也就是说，如果Bloom过滤器确定交易ID在集合中，那么它可能不在集合中。可以将Bloom过滤器的误报率（FPR）设置任何值，但是有一个重要的权衡：如果FPR很低，而Bloom过滤器因此是准确的，那么它的字节数也会更大。如果我们不介意关于块中的事务ID的错误答案，则Bloom过滤器将很小。</p>
+</li>
+<li><p>使用可逆布隆查找表（IBLT），是另一种有用的概率数据结构，它可以发现两个集合之间的对称差异。例如，可以创建发送方区块中所有交易ID的IBLT，然后使用接收方的mempool中交易创建另一个IBLT。第二个IBLT减第一个IBLT将告诉我们mempool中的哪些交易不在块中。鉴于此功能，可以单独使用IBLT将块从发送方转发到接收方，但不幸的是，它不是一种有效的方法。 IBLT的字节大小随着从中恢复的差异的大小线性增加。 <em> IBLT每个交易ID使用大约17个字节，这是对称差异的一部分，IBLT的开销（以字节为单位）约为140％（对于小的对称差异，此值可能会有很大差异，并且可以使用所描述的技术进行最佳设置在下面的恢复部分）。因此，如果mempool是大于块的1000个交易（即，对称差异是1000），则发送方的IBLT将是大约（1.4 </em> 1000）<em> 17 = 23,800字节。</em></p>
+</li>
+<li><p>第五个也是最好的解决方案是布隆过滤器和可逆布隆查找表两种数据结构的组合。首先，发送者创建区块中交易的布隆过滤器来过滤接受者mempool中的交易，这个过程允许大量的误报，所以可以使用一个小的Bloom过滤器。然后用发送者区块中交易的IBLT清除Bloom过滤器所犯的任何错误。因为对称差异现在非常小：它等于我们的Bloom过滤器产生的误报数量和接收方交易池中缺少的交易。有一个权衡：可以使Bloom过滤器更大（更准确），从而产生更小的IBLT;或者可以使IBLT更大（能够纠正更多错误），从而产生更小的布隆过滤器。</p>
+</li>
+</ul>
+<h2 id="Graphene-协议实现"><a href="#Graphene-协议实现" class="headerlink" title="Graphene 协议实现"></a>Graphene 协议实现</h2><p>Graphene使用两组协调数据结构来表示交易列表：布隆过滤器和可逆布隆查找表（IBLT）。 两个数据结构的组合比单独使用任何一个更有效的表达交易列表，并且它通常比从缩短的交易ID构造交易列表更有效。</p>
+<h3 id="协议流程"><a href="#协议流程" class="headerlink" title="协议流程"></a>协议流程</h3><p><img src="https://github.com/yahtoo/study/blob/master/p2p_diagram/graphene.png?raw=true" alt="协议流程"><br>节点之间的同步步骤：</p>
+<p>1.发送方使用inv消息通知接收方新的块可用。</p>
+<p>2.如果接收方尚不知道该块，则她使用get_grblk消息进行响应。</p>
+<p>3.发送方创建块中所有交易ID的布隆过滤器S以及仅包含每个交易ID的“廉价哈希”（哈希的前8个字节）的IBLT(I)。<br>此外，接收方可能遗漏的任何完整交易（例如块的coinbase）都会收集到其他交易清单V中。如果没有协议定义的交易排序，则发件人还会创建交易排序列表R，按ID按字典顺序列出，表示（每个ID的log（n）位）每个事务ID的预期顺序。发送方将S，I，V，R和块头组装成grblk消息，然后发送给接收方。</p>
+<p>4.接收者首先将所有本地已知的交易ID聚合到集合T中，集合T由在V和她的mempool（加上孤儿池）中找到的集合组成。然后，她使用Bloom过滤器S从T中过滤交易ID。任何看似在S中的交易都会添加到她自己的IBLT中，I’。然后，她在I和I’上执行IBLT减法操作，以解码两组之间对称差异中的交易ID集。从该减法操作，可以知道错误地通过S的一组假阳性ID集合 F或者ID集在块中但是没有T中缺失的交易集合M。减法操作要么成功要么失败，如果失败需要采用后备方法：</p>
+<p>（1）成功：IBLT减法成功，集合M为空。块中的所有交易接收方都拥有。</p>
+<p>（2）成功：IBLT减法成功，集合M非空。必须请求丢失交易。接收器使用get_grblktx消息请求丢失的交易，发送方用包含M指示的完整交易的grblktx消息响应。</p>
+<p>（3）IBLT解码失败：IBLT减法操作完全失败。在这种情况下，接收方无法确定块中的完整交易ID集。当接收方mempool中交易较少时容易发生此类错误，由于IBLT的概率性质，也可能偶尔发生（例如，1/240块）。接收方需要使用获取完整区块消息重新请求整个区块。</p>
+<p>（4）IBLT校验和失败，当发送方grblktx消息返回的交易太少时被检测到：IBLT减法成功，但由于IBLT校验和错误而返回错误的交易ID。在这种情况下，接收方将针对错误的交易ID发出get_grblktx消息，发送方将不会返回该交易。当接收方检测到并非所有事务都已被发送时，她将假定已发生校验和错误并请求完整的区块。</p>
+<p>5.如果IBLT减法成功（并且接收到丢失的交易），并且如果没有发生校验和错误，则接收器将留下块中的无序交易集。 （请注意，在此阶段，接收方肯定会拥有实际的交易，而不仅仅是其ID）。</p>
+<p>6.接收器将交易放在Merkle树中，该树根和块头中指定的根进行验证。 Merkle树中的交易顺序由网络的协议定义的规范排序或grblk中包含的特定排队信息R确定。</p>
+<h3 id="参数选择"><a href="#参数选择" class="headerlink" title="参数选择"></a>参数选择</h3><p>使用Bloom过滤器中继块需要多少空间？例如，我们可以将布隆过滤器的FPR设置为f = 1 / m。在这种情况下，当接收者检查mempoool中的每个m个交易ID时，Bloom过滤器将错误地指出1个交易在块中。更糟糕的是，接受者不知道哪个交易是错误的;由于额外的交易，Merkle根将不会验证通过。我们可以尝试通过降低过滤器的FPR来解决这个问题。例如，如果我们将FPR设置为f = 1 /（144m），那么我们可以预期过滤器将仅允许每144个块中继一次的错误答案（即，每天仅约一次）。但请记住，这种准确性将花费我们的字节数。插入n个项目和假阳性率f = 1/144m的布隆过滤器的大小众所周知为-n <em> ln（f）/ ln2（2）= n </em> ln（1 /（144m））/ （8ln2（2））个字节。例如，对于具有n = 2000个交易的块和总共m = 6000个交易的mempool，Bloom过滤器将是大约7,113个字节。这比我们使用交易ID或8字节的廉价ID有所改进,但不是最优方案。</p>
+<p>Graphene通过选取两个数据结构的参数，使得总和尺寸最小。例如，对于n = 2000和m = 6000，发送方计算可以通过设置恢复27项对称差异的IBLT和具有f = 0.00675的FPR的布隆过滤器来达到最小尺寸。在我们的测试实现中（再次假设IBLT开销为140％），这导致总共3,244字节，基于643字节的IBLT和2601字节的Bloom过滤器，大约是发送每笔交易发送8个字节交易ID的大小的1/5。如果协议未定义打包交易顺序，则还必须发送事务排序的信息，这会将总计增加2,750个字节到5,994个字节（这大约是每个交易发送8个字节交易ID的成本的38％）。<br>随着块尺寸的增加，石墨烯保持了这种尺寸优势。例如，对于n = 10,000个事务的块，列出每个事务ID的8个字节将是80,000个字节。使用m = 30,000个事务的mempool，Graphene的成本为14,482字节（或包括订购信息时为31,091字节）。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/04/23/Bytom-p2p-网络通信协议分析/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1423,7 +1572,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">4</span>
+                  <span class="site-state-item-count">5</span>
                   <span class="site-state-item-name">posts</span>
                 </a>
               </div>
