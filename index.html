@@ -229,7 +229,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/08/13/交易中继协议Erlay/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/08/11/交易中继协议Erlay/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="yahtoo">
@@ -248,7 +248,7 @@
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2019/08/13/交易中继协议Erlay/" itemprop="url">交易中继协议Erlay</a></h1>
+                <a class="post-title-link" href="/2019/08/11/交易中继协议Erlay/" itemprop="url">交易中继协议Erlay</a></h1>
         
 
         <div class="post-meta">
@@ -260,8 +260,8 @@
               
                 <span class="post-meta-item-text">Posted on</span>
               
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-08-13T09:05:31+08:00">
-                2019-08-13
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-08-11T16:33:27+08:00">
+                2019-08-11
               </time>
             
 
@@ -310,8 +310,7 @@
 </ul>
 <h2 id="集合协调算法"><a href="#集合协调算法" class="headerlink" title="集合协调算法"></a>集合协调算法</h2><p>erlay使用的集合协调算法为Minisketch,使用该算法生成的集合草图具有以下特性:<br>•草图具有预定容量，当集合中的元素数量不超过容量时，始终可以通过解码草图从草图中恢复整个集合。 具有容量c的b位元素的草图可以以bc位存储。<br>•通过对这些集的草图的位表示进行异或运算，可以获得两个集之间的对称差异草图（即，出现在一个但不是两个集合中的所有元素）。</p>
 <p>节点间协调流程<br>（1）Alice和Bob节点计算本地交易草图。<br>（2）Alice将草图发送给Bob。<br>（3）Bob计算两个草图的对称差异。<br>（4）Bob 获取自己缺少的交易。<br>（5）Bob向Alice发送alice缺少的交易。<br>对草图进行解码在计算上是昂贵的，并且计算量是差异的二次方。 因此，准确估计差异的大小并在集合差异变得过大之前进行协调是协议的重要目标。<br>重要的参数<br>D – 草图真正的差异大小。<br>d – D的估计值。<br>q – 计算d的参数。<br>准确估计D对于协调的成功至关重要。论文采用了一种简约的方法，根据当前的集合大小和之前的对帐轮次中观察到的差异来估计集合差异的大小。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">d = abs(|A| − |B|) + q · min(|A|, |B|) + c</span><br></pre></td></tr></table></figure></p>
-<p>其中q是表征先前对帐的浮点系数（在下面导出），c是用于处理特殊情况的参数。</p>
-<p>$q=\frac{D − abs(|A| − |B|)}{min(|A|, |B|)}$</p>
+<p>其中q是表征先前对帐的浮点系数（在下面导出），c是用于处理特殊情况的参数。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">q=(D − abs(|A| − |B|)) / (min(|A|, |B|))</span><br></pre></td></tr></table></figure></p>
 <p>此更新的q将用于下一轮对帐。 我们以这种方式计算q，因为我们假设网络中的每个节点都具有一致的最优q。<br>协议具体流程<br><img src="https://github.com/yahtoo/study/blob/master/uml/erlay_seq.png?raw=true" alt="协议流程"></p>
 <h2 id="Minisketch-数学原理"><a href="#Minisketch-数学原理" class="headerlink" title="Minisketch 数学原理"></a>Minisketch 数学原理</h2><h3 id="集合草图"><a href="#集合草图" class="headerlink" title="集合草图"></a>集合草图</h3><p>出于本说明的目的，草图可以被视为具有两个特殊属性的“集合校验和”：</p>
 <ul>
@@ -321,18 +320,34 @@
 </li>
 </ul>
 <p>此概述说明了如何将集合转换为草图以及如何从草图中恢复集合。</p>
-<h3 id="从字段元素到草图"><a href="#从字段元素到草图" class="headerlink" title="从字段元素到草图"></a>从字段元素到草图</h3><h4 id="数据条目作为字段元素"><a href="#数据条目作为字段元素" class="headerlink" title="数据条目作为字段元素"></a>数据条目作为字段元素</h4><p>范围[1 … 2^b-1]中的每个整数（具有字段大小b的Minisketch草图的可接受数据元素）可以映射到有限域 GF(2^b) 的非零字段元素？？。在这个有限域中，我们可以添加和相乘元素，并为这些操作提供自定义。字段元素的加法（和减法）对应于它们对应的整数的XOR运算，但乘法复杂一些。</p>
+<h3 id="从字段元素到草图"><a href="#从字段元素到草图" class="headerlink" title="从字段元素到草图"></a>从字段元素到草图</h3><h4 id="数据条目作为字段元素"><a href="#数据条目作为字段元素" class="headerlink" title="数据条目作为字段元素"></a>数据条目作为字段元素</h4><p>范围 <em>[1…2<sup>b</sup>-1]</em> 中的每个整数（具有字段大小b的Minisketch草图的可接受数据元素）可以映射到有限域 <em>GF(2<sup>b</sup>)</em> 的非零字段元素。在这个有限域中，我们可以添加和相乘元素，并为这些操作提供自定义。字段元素的加法（和减法）对应于它们对应的整数的XOR运算，但乘法复杂一些。</p>
 <h4 id="集合幂级数"><a href="#集合幂级数" class="headerlink" title="集合幂级数"></a>集合幂级数</h4><p>我们定义了一个函数S，它将元素m映射到下面形式的幂级数：</p>
-<p>$S(m)= 1 + mx + m^2x^2 + m^3x^3 + …$<br>然后，我们通过将集合元素的函数结果相加来扩展此函数以对字段元素集进行操作。如果M={m1，m2，…}：<br>$S(M)= S（{m1，m2，…}）= S（m1）+ S（m2）+ … =（1 + 1 + …）+（m1 + m2 + …）x +（m 1^2 + m2^2 + …）x^2 +（m 1 3 + …$<br>因为在我们的有限域,加法对应于XOR，所以对于每一个a是a + a = 0。如果把这个规则引入S函数，意味着对于每个a，S（a）+ S（a）= 0。这意味着这些幂级数的系数具有我们希望的草图的第二个属性，即存在组合两个草图的有效操作，使得结果是集合的对称差异的草图。它认为 S（{m 1，m 2 }）+ S（{m 2，m 3 }）= S（m 1）+（S（m 2）+ S（m 2））+ S（m 3）= S（m 1）+ S（m 3）= S（{m 1，m 3 }}）。问题是我们是否也可以从其幂级数系数中有效地恢复元素。</p>
-<h4 id="无穷大的系数近似"><a href="#无穷大的系数近似" class="headerlink" title="无穷大的系数近似"></a>无穷大的系数近似</h4><p>为了更容易理解这些幂级数，请注意单个元素的系列实际上是几何级数。如果我们正在研究实数而不是有限域并且$| mx | &lt;1$，它会收敛到$1/(1 - mx)$。<br>$(1 - mx)S(m)=1$</p>
-<p>这可以推广到多个集合元素的运算。对于我们有两个要素：</p>
-<p>$(1 - m 1 x)(1 - m 2 x)S({m 1，m 2 })=(1 - m 1 x)(1 - m 2 x)(S(m 1)+ S(m 2)))=(1 - m 2 x)+(1 - m 1 x)$<br>对于三个：</p>
-<p>$(1 - m 1 x)(1 - m 2 x)(1 - m 3 x)S({m 1，m 2，m 3 })=(1 - m 1 x)(1 - m 2 x)(1 - m 3 x)(S(m 1)+ S(m 2)+ S(m 3))=(1 - m 2 x)(1 - m 3 x)+(1 - m 1 x)(1 - m 3 x)+(1 - m 1 x)(1 - m 2 x)$<br>在每一种情况下，我们注意到，$S(M)*(1 - mix) mi∈M$  得到一个n-1阶多项式。</p>
-<h3 id="解析集合元素"><a href="#解析集合元素" class="headerlink" title="解析集合元素"></a>解析集合元素</h3><p>上面的函数让我们可以构建了一个求解器，它从幂级数的系数中提取集合元素。如果我们能找到一个多项式L由N个不同（$1 -mix$）因子组成，对于不同的mi，使得$P = S（M）L$为n-1阶多项式，然后这些值mi是M的元素。</p>
-<p>P的系数是集合元素本身的非平凡表达式。然而，我们可以只关注P中的n阶或更高阶的系数，其它系数都是0.让si做S（m）系数 ，Ii做L的系数，$S(m)= s0 + s1 x + s2 x^2 + s3 x^3 + …$ 并且$L = 10 + I1 x + I2x^2 + I3 x ^3+ … + In x^n$。注意I0 = 1，它是$（1-m i x）$因子中所有单一项的乘积。</p>
-<p>以下是n+1到2n阶的$S(M)L$系数的等式：<br>$sn+1 + sn+0l1 + sn-1l2 + sn-2l3 + … + s1ln = 0$<br>$<br>sn+2 + sn+1l1 + sn+0l2 + sn-1l3 + … + s2ln = 0$<br>$sn+3 + sn+2l1 + sn+1l2 + sn+0l3 + … + s3ln = 0$<br>…<br>$<br>s2n + s2n-1l1 + s2n-2l2 + s2n-3l3 + … + snln = 0$</p>
-<p>这些是具有n个未知数n个线性方程，可以使用高斯消元法求解。在这样做之后，我们得到L的系数，然后可以将其分解为一阶因子$（1-m i x）$。得到的m值是我们的集合元素。</p>
-<h4 id="算法结论"><a href="#算法结论" class="headerlink" title="算法结论"></a>算法结论</h4><p>有趣的是，解决上述方程组只需要2n个S（M）系数。这意味着我们得到答案：1至2N的S(M)系数，或列表 $[M 1 + M 2 + …，M 1 2 + M 2 2 + …，…，M 1 2n + m 2 2n + …]$ 用作草图，满足我们想要的两个属性：</p>
+<ul>
+<li><em>S(m) = 1 + mx + m<sup>2</sup>x<sup>2</sup> + m<sup>3</sup>x<sup>3</sup> + …</em>.<br>然后，我们通过将集合元素的函数结果相加来扩展此函数以对字段元素集进行操作。如果M={m1，m2，…}：</li>
+<li><em>S(M) = S({m<sub>1</sub>,m<sub>2</sub>,…}) = S(m<sub>1</sub>) + S(m<sub>2</sub>) + … = (1 + 1 + …) + (m<sub>1</sub> + m<sub>2</sub> + …)x + (m<sub>1</sub><sup>2</sup> + m<sub>2</sub><sup>2</sup> + …)x<sup>2</sup> + (m<sub>1</sub><sup>3</sup> + …</em><br>因为在我们的有限域,加法对应于XOR，所以对于每一个a是a + a = 0。如果把这个规则引入S函数，意味着对于每个a，S（a）+ S（a）= 0。这意味着这些幂级数的系数具有我们希望的草图的第二个属性，即存在组合两个草图的有效操作，使得结果是集合的对称差异的草图。它认为 <em>S({m<sub>1</sub>,m<sub>2</sub>}) + S({m<sub>2</sub>,m<sub>3</sub>}) = S(m<sub>1</sub>) + (S(m<sub>2</sub>) + S(m<sub>2</sub>)) + S(m<sub>3</sub>) = S(m<sub>1</sub>) + S(m<sub>3</sub>) = S({m<sub>1</sub>,m<sub>3</sub>}})</em>. </li>
+</ul>
+<p>问题是我们是否也可以从其幂级数系数中有效地恢复元素。</p>
+<h4 id="无穷大的系数近似"><a href="#无穷大的系数近似" class="headerlink" title="无穷大的系数近似"></a>无穷大的系数近似</h4><p>为了更容易理解这些幂级数，请注意单个元素的系列实际上是几何级数。如果我们正在研究实数而不是有限域并且 <em>|mx| &lt; 1</em>，它会收敛到 <em>(1 - mx)<sup>-1</sup></em>。</p>
+<ul>
+<li><p><em>(1 - mx) S(m) = 1</em><br>这可以推广到多个集合元素的运算。对于我们有两个要素：</p>
+</li>
+<li><p><em>(1 - m<sub>1</sub>x) (1 - m<sub>2</sub>x) S({m<sub>1</sub>,m<sub>2</sub>}) = (1 - m<sub>1</sub>x) (1 - m<sub>2</sub>x) (S(m<sub>1</sub>) + S(m<sub>2</sub>)) = (1 - m<sub>2</sub>x) + (1 - m<sub>1</sub>x)</em><br>对于三个：</p>
+</li>
+<li><p><em>(1 - m<sub>1</sub>x) (1 - m<sub>2</sub>x) (1 - m<sub>3</sub>x) S({m<sub>1</sub>,m<sub>2</sub>,m<sub>3</sub>}) = (1 - m<sub>1</sub>x) (1 - m<sub>2</sub>x) (1 - m<sub>3</sub>x) (S(m<sub>1</sub>) + S(m<sub>2</sub>) + S(m<sub>3</sub>)) = (1 - m<sub>2</sub>x)(1 - m<sub>3</sub>x) + (1 - m<sub>1</sub>x)(1 - m<sub>3</sub>x) + (1 - m<sub>1</sub>x)(1 - m<sub>2</sub>x)</em><br>在每一种情况下，我们注意到，<em>S(M)(1 - m<sub>i</sub>x)</em>  其中mi是集合M元素，得到一个n-1阶多项式。</p>
+</li>
+</ul>
+<h3 id="解析集合元素"><a href="#解析集合元素" class="headerlink" title="解析集合元素"></a>解析集合元素</h3><p>上面的函数让我们可以构建了一个求解器，它从幂级数的系数中提取集合元素。如果我们能找到一个多项式L由N个不同 <em>(1 - m<sub>i</sub>x)</em> 因子组成，对于不同的<em>m<sub>i</sub></em>，使得 <em>P = S(M)L</em> 为 <em>n-1</em> 阶多项式，然后这些值mi是M的元素。</p>
+<p>P的系数是集合元素本身的非平凡表达式。然而，我们可以只关注P中的n阶或更高阶的系数，其它系数都是0.让si做S（m）系数 ，Ii做L的系数，<em>S(M) = s<sub>0</sub> + s<sub>1</sub>x + s<sub>2</sub>x<sup>2</sup> + s<sub>3</sub>x<sup>3</sup> + …</em> 并且 <em>L = l<sub>0</sub> + l<sub>1</sub>x + l<sub>2</sub>x<sup>2</sup> + l<sub>3</sub>x<sup>3</sup> + … + l<sub>n</sub>x<sup>n</sup></em>。注意 <em>l<sub>0</sub> = 1</em>，它是 <em>(1 - m<sub>i</sub>x)</em> 因子中所有单一项的乘积。</p>
+<p>以下是n+1到2n阶的 <em>S(M)L</em> 系数的等式：</p>
+<ul>
+<li><em>s<sub>n+1</sub> + s<sub>n+0</sub>l<sub>1</sub> + s<sub>n-1</sub>l<sub>2</sub> + s<sub>n-2</sub>l<sub>3</sub> + … + s<sub>1</sub>l<sub>n</sub> = 0</em></li>
+<li><em>s<sub>n+2</sub> + s<sub>n+1</sub>l<sub>1</sub> + s<sub>n+0</sub>l<sub>2</sub> + s<sub>n-1</sub>l<sub>3</sub> + … + s<sub>2</sub>l<sub>n</sub> = 0</em></li>
+<li><em>s<sub>n+3</sub> + s<sub>n+2</sub>l<sub>1</sub> + s<sub>n+1</sub>l<sub>2</sub> + s<sub>n+0</sub>l<sub>3</sub> + … + s<sub>3</sub>l<sub>n</sub> = 0</em></li>
+<li>…</li>
+<li><em>s<sub>2n</sub> + s<sub>2n-1</sub>l<sub>1</sub> + s<sub>2n-2</sub>l<sub>2</sub> + s<sub>2n-3</sub>l<sub>3</sub> + … + s<sub>n</sub>l<sub>n</sub> = 0</em></li>
+</ul>
+<p>这些是具有n个未知数n个线性方程，可以使用高斯消元法求解。在这样做之后，我们得到L的系数，然后可以将其分解为一阶因子 <em>(1 - m<sub>i</sub>x)</em>。得到的m值是我们的集合元素。</p>
+<h4 id="算法结论"><a href="#算法结论" class="headerlink" title="算法结论"></a>算法结论</h4><p>有趣的是，解决上述方程组只需要2n个S（M）系数。这意味着我们得到答案：1至2N的S(M)系数，或列表 <em>[m<sub>1</sub> + m<sub>2</sub> + …, m<sub>1</sub><sup>2</sup> + m<sub>2</sub><sup>2</sup> + …, …, m<sub>1</sub><sup>2n</sup> + m<sub>2</sub><sup>2n</sup> + …]</em> 用作草图，满足我们想要的两个属性：</p>
 <ul>
 <li>通过简单地将列表元素相加组成的草图，可以用来计算其对称差异的草图。</li>
 <li>使用2n个列表元素，我们可以有效地从草图中恢复n个元素。</li>
