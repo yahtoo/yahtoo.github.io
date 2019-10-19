@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Design Pattern," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="六大设计原则 (设计模式之禅读书笔记) 开闭原则（The Open Closed Principle）软件应该通过扩展来实现变化，而不是通过修改已有的代码来实现变化。 单一职责原则（The Single Responsibility Principle）定义：应该有且仅有一个原因引起类的变更。 迪米特原则 （The Least Knowledge Principle）最少知道原则核心观念是类间解耦">
+<meta name="keywords" content="Design Pattern">
+<meta property="og:type" content="article">
+<meta property="og:title" content="设计模式 - SOLID 原则">
+<meta property="og:url" content="http://yoursite.com/2019/08/17/设计模式-SOLID-原则/index.html">
+<meta property="og:site_name" content="yahtoo&#39;s notes">
+<meta property="og:description" content="六大设计原则 (设计模式之禅读书笔记) 开闭原则（The Open Closed Principle）软件应该通过扩展来实现变化，而不是通过修改已有的代码来实现变化。 单一职责原则（The Single Responsibility Principle）定义：应该有且仅有一个原因引起类的变更。 迪米特原则 （The Least Knowledge Principle）最少知道原则核心观念是类间解耦">
+<meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2019-10-19T03:46:57.646Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="设计模式 - SOLID 原则">
+<meta name="twitter:description" content="六大设计原则 (设计模式之禅读书笔记) 开闭原则（The Open Closed Principle）软件应该通过扩展来实现变化，而不是通过修改已有的代码来实现变化。 单一职责原则（The Single Responsibility Principle）定义：应该有且仅有一个原因引起类的变更。 迪米特原则 （The Least Knowledge Principle）最少知道原则核心观念是类间解耦">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2019/08/17/设计模式-SOLID-原则/"/>
+
+
+
+
+
+  <title>设计模式 - SOLID 原则 | yahtoo's notes</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="default">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">yahtoo's notes</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            Tags
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            Archives
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/08/17/设计模式-SOLID-原则/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="yahtoo">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="yahtoo's notes">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">设计模式 - SOLID 原则</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-08-17T11:39:41+08:00">
+                2019-08-17
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>六大设计原则 (设计模式之禅读书笔记)</p>
+<h2 id="开闭原则（The-Open-Closed-Principle）"><a href="#开闭原则（The-Open-Closed-Principle）" class="headerlink" title="开闭原则（The Open Closed Principle）"></a>开闭原则（The Open Closed Principle）</h2><p>软件应该通过扩展来实现变化，而不是通过修改已有的代码来实现变化。</p>
+<h2 id="单一职责原则（The-Single-Responsibility-Principle）"><a href="#单一职责原则（The-Single-Responsibility-Principle）" class="headerlink" title="单一职责原则（The Single Responsibility Principle）"></a>单一职责原则（The Single Responsibility Principle）</h2><p>定义：应该有且仅有一个原因引起类的变更。</p>
+<h2 id="迪米特原则-（The-Least-Knowledge-Principle）"><a href="#迪米特原则-（The-Least-Knowledge-Principle）" class="headerlink" title="迪米特原则 （The Least Knowledge Principle）"></a>迪米特原则 （The Least Knowledge Principle）</h2><p>最少知道原则<br>核心观念是类间解耦，低耦合，只有弱耦合以后，类的复用率才可以提高。<br>缺点：产生中转或跳转类，系统复杂性提高，增加维护难度。<br>一个类只和朋友交流，不与陌生类交流。<br>朋友类：出现在成员变量或方法输入输出参数中的类称为成员朋友类而出现在方法体内部的类不属于朋友类。<br>类要做到高内聚低耦合，尽量减少public属性方法。<br>关于方法放到哪个类中的问题：<br>如果一个方法放到本类中，既不增加类间关系，也不对本类产生负面影响，那就放置在本类中。<br>系统中如果一个类跳转两次以上才能访问另一个类就需要进行重构。</p>
+<h2 id="里氏替换原则-The-Liskov-Substitution-Principle"><a href="#里氏替换原则-The-Liskov-Substitution-Principle" class="headerlink" title="里氏替换原则 (The Liskov Substitution Principle)"></a>里氏替换原则 (The Liskov Substitution Principle)</h2><p>只要父类能出现的地方子类就可以出现，而且替换为子类也不会产生任何错误或异常。<br>在类中调用其它类时务必要使用父类或接口，如果不能使用父类或接口，则说明类的设计已经违背了lsp原则。<br>如果子类不能完整的实现父类的方法，或者父类的某些方法在子类中已经发生畸变，则建议断开父子继承关系，采用依赖，继承，组合等关系代替继承。<br>覆盖或实现父类的方法时输入参数可以被放大。<br>覆盖或实现父类的方法时输出参数可以被缩小。<br>采用里氏替换原则的目的就是增强程序的健壮性，版本升级时可以保持非常好的兼容性。即使增加子类，原有的子类还可以继续运行。在实际的项目中，每个子类对应不同的业务含义，使用父类作为参数，传递不同的子类完成不同的业务逻辑。</p>
+<h2 id="依赖倒置原则-The-Dependency-Inversion-Principle"><a href="#依赖倒置原则-The-Dependency-Inversion-Principle" class="headerlink" title="依赖倒置原则 (The Dependency Inversion Principle)"></a>依赖倒置原则 (The Dependency Inversion Principle)</h2><p>高层模块不应该依赖低层模块，两者都应该依赖其抽象。<br>抽象不应该依赖细节。<br>细节应该依赖抽象。<br>面向接口编程。<br>两个类之间有依赖关系，只要指定出两者的接口，就可以独立开发了。<br>测试驱动开发，适合研发类项目或者项目成员整体水平比较低的情况。<br>抽象是对实现的约束，对依赖者而言也是一种契约。<br>1 每个类尽量都有接口或者抽象类。<br>面向接口编程<br>编写程序需要的是对现实世界的事物进行抽象，抽象的结果就是有了抽象类和接口，然后我们根据系统设计的需要产生了抽象间的依赖，代替了人们传统中的事物间的依赖，倒置就是从这里产生的。</p>
+<h2 id="接口隔离原则-The-Interface-Segregation-Principle"><a href="#接口隔离原则-The-Interface-Segregation-Principle" class="headerlink" title="接口隔离原则 (The Interface Segregation Principle)"></a>接口隔离原则 (The Interface Segregation Principle)</h2><p>实例接口 class<br>类接口 interface<br>客户端不应该依赖它不需要的接口<br>类间的依赖关系应该建立在最小的接口上。<br>建立单一接口，不要建立臃肿庞大的接口。<br>根据接口隔离原则拆分接口时，首先必须满足单一职责原则。<br>通过业务逻辑压缩接口中的public方法，尽量让接口达到满身筋骨肉，而不是肥嘟嘟的一大堆方法。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div></div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>Donate</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/images/wechat.jpg" alt="yahtoo WeChat Pay"/>
+        <p>WeChat Pay</p>
+      </div>
+    
+
+    
+
+    
+      <div id="bitcoin" style="display: inline-block">
+        <img id="bitcoin_qr" src="/images/BTC.jpg" alt="yahtoo Bitcoin"/>
+        <p>Bitcoin</p>
+      </div>
+    
+
+    
+      <div id="btm" style="display: inline-block">
+        <img id="btm_qr" src="/images/BTM.jpg" alt="yahtoo BTM"/>
+        <p>BTM</p>
+      </div>
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Design-Pattern/" rel="tag"># Design Pattern</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/08/11/交易中继协议Erlay/" rel="next" title="交易中继协议Erlay">
+                <i class="fa fa-chevron-left"></i> 交易中继协议Erlay
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div id="gitalk-container"></div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">yahtoo</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">7</span>
+                  <span class="site-state-item-name">posts</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">9</span>
+                  <span class="site-state-item-name">tags</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/yahtoo" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:yahtoo.ma@gmail.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#开闭原则（The-Open-Closed-Principle）"><span class="nav-number">1.</span> <span class="nav-text">开闭原则（The Open Closed Principle）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#单一职责原则（The-Single-Responsibility-Principle）"><span class="nav-number">2.</span> <span class="nav-text">单一职责原则（The Single Responsibility Principle）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#迪米特原则-（The-Least-Knowledge-Principle）"><span class="nav-number">3.</span> <span class="nav-text">迪米特原则 （The Least Knowledge Principle）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#里氏替换原则-The-Liskov-Substitution-Principle"><span class="nav-number">4.</span> <span class="nav-text">里氏替换原则 (The Liskov Substitution Principle)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#依赖倒置原则-The-Dependency-Inversion-Principle"><span class="nav-number">5.</span> <span class="nav-text">依赖倒置原则 (The Dependency Inversion Principle)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#接口隔离原则-The-Interface-Segregation-Principle"><span class="nav-number">6.</span> <span class="nav-text">接口隔离原则 (The Interface Segregation Principle)</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">yahtoo</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+  <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+  <script src="https://cdn.bootcss.com/blueimp-md5/2.10.0/js/md5.js"></script>
+   <script type="text/javascript">
+        var gitalk = new Gitalk({
+          clientID: '6433ec3e9af928a8d076',
+          clientSecret: '825ff900f1b6c4de557fc0c2bd8671165a63b2bc',
+          repo: 'yahtoo.github.io',
+          owner: 'yahtoo',
+          admin: ['yahtoo'],
+          id: md5(location.pathname),
+          distractionFreeMode: 'true'
+        })
+        gitalk.render('gitalk-container')           
+       </script>
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

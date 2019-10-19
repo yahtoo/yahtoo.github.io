@@ -239,6 +239,132 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/08/17/设计模式-SOLID-原则/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="yahtoo">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="yahtoo's notes">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/08/17/设计模式-SOLID-原则/" itemprop="url">设计模式 - SOLID 原则</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-08-17T11:39:41+08:00">
+                2019-08-17
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>六大设计原则 (设计模式之禅读书笔记)</p>
+<h2 id="开闭原则（The-Open-Closed-Principle）"><a href="#开闭原则（The-Open-Closed-Principle）" class="headerlink" title="开闭原则（The Open Closed Principle）"></a>开闭原则（The Open Closed Principle）</h2><p>软件应该通过扩展来实现变化，而不是通过修改已有的代码来实现变化。</p>
+<h2 id="单一职责原则（The-Single-Responsibility-Principle）"><a href="#单一职责原则（The-Single-Responsibility-Principle）" class="headerlink" title="单一职责原则（The Single Responsibility Principle）"></a>单一职责原则（The Single Responsibility Principle）</h2><p>定义：应该有且仅有一个原因引起类的变更。</p>
+<h2 id="迪米特原则-（The-Least-Knowledge-Principle）"><a href="#迪米特原则-（The-Least-Knowledge-Principle）" class="headerlink" title="迪米特原则 （The Least Knowledge Principle）"></a>迪米特原则 （The Least Knowledge Principle）</h2><p>最少知道原则<br>核心观念是类间解耦，低耦合，只有弱耦合以后，类的复用率才可以提高。<br>缺点：产生中转或跳转类，系统复杂性提高，增加维护难度。<br>一个类只和朋友交流，不与陌生类交流。<br>朋友类：出现在成员变量或方法输入输出参数中的类称为成员朋友类而出现在方法体内部的类不属于朋友类。<br>类要做到高内聚低耦合，尽量减少public属性方法。<br>关于方法放到哪个类中的问题：<br>如果一个方法放到本类中，既不增加类间关系，也不对本类产生负面影响，那就放置在本类中。<br>系统中如果一个类跳转两次以上才能访问另一个类就需要进行重构。</p>
+<h2 id="里氏替换原则-The-Liskov-Substitution-Principle"><a href="#里氏替换原则-The-Liskov-Substitution-Principle" class="headerlink" title="里氏替换原则 (The Liskov Substitution Principle)"></a>里氏替换原则 (The Liskov Substitution Principle)</h2><p>只要父类能出现的地方子类就可以出现，而且替换为子类也不会产生任何错误或异常。<br>在类中调用其它类时务必要使用父类或接口，如果不能使用父类或接口，则说明类的设计已经违背了lsp原则。<br>如果子类不能完整的实现父类的方法，或者父类的某些方法在子类中已经发生畸变，则建议断开父子继承关系，采用依赖，继承，组合等关系代替继承。<br>覆盖或实现父类的方法时输入参数可以被放大。<br>覆盖或实现父类的方法时输出参数可以被缩小。<br>采用里氏替换原则的目的就是增强程序的健壮性，版本升级时可以保持非常好的兼容性。即使增加子类，原有的子类还可以继续运行。在实际的项目中，每个子类对应不同的业务含义，使用父类作为参数，传递不同的子类完成不同的业务逻辑。</p>
+<h2 id="依赖倒置原则-The-Dependency-Inversion-Principle"><a href="#依赖倒置原则-The-Dependency-Inversion-Principle" class="headerlink" title="依赖倒置原则 (The Dependency Inversion Principle)"></a>依赖倒置原则 (The Dependency Inversion Principle)</h2><p>高层模块不应该依赖低层模块，两者都应该依赖其抽象。<br>抽象不应该依赖细节。<br>细节应该依赖抽象。<br>面向接口编程。<br>两个类之间有依赖关系，只要指定出两者的接口，就可以独立开发了。<br>测试驱动开发，适合研发类项目或者项目成员整体水平比较低的情况。<br>抽象是对实现的约束，对依赖者而言也是一种契约。<br>1 每个类尽量都有接口或者抽象类。<br>面向接口编程<br>编写程序需要的是对现实世界的事物进行抽象，抽象的结果就是有了抽象类和接口，然后我们根据系统设计的需要产生了抽象间的依赖，代替了人们传统中的事物间的依赖，倒置就是从这里产生的。</p>
+<h2 id="接口隔离原则-The-Interface-Segregation-Principle"><a href="#接口隔离原则-The-Interface-Segregation-Principle" class="headerlink" title="接口隔离原则 (The Interface Segregation Principle)"></a>接口隔离原则 (The Interface Segregation Principle)</h2><p>实例接口 class<br>类接口 interface<br>客户端不应该依赖它不需要的接口<br>类间的依赖关系应该建立在最小的接口上。<br>建立单一接口，不要建立臃肿庞大的接口。<br>根据接口隔离原则拆分接口时，首先必须满足单一职责原则。<br>通过业务逻辑压缩接口中的public方法，尽量让接口达到满身筋骨肉，而不是肥嘟嘟的一大堆方法。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/08/11/交易中继协议Erlay/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1755,7 +1881,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-count">7</span>
                   <span class="site-state-item-name">posts</span>
                 </a>
               </div>
@@ -1768,7 +1894,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">12</span>
+                  <span class="site-state-item-count">9</span>
                   <span class="site-state-item-name">tags</span>
                 </a>
               </div>
